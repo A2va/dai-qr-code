@@ -12,31 +12,58 @@ import picocli.CommandLine;
 public class Root implements Callable<Integer>{
 
     public enum AvailableOutputFormat {
-        TEXT,
-        JPEG
+        TEXT, JPEG;
+
+        @Override
+        public String toString() {
+            return name().toLowerCase();
+        }
     }
 
     public enum AvailableInputFormat {
-        TEXT,
-        FILE
+        TEXT, FILE;
+
+        @Override
+        public String toString() {
+            return name().toLowerCase();
+        }
     }
 
     @CommandLine.Parameters(
             index = "0",
-            description = "The text or URL or file to encode as a QR code.")
+            description = "The text or file to encode as a QR code.")
     protected String text;
 
-    @CommandLine.Option(
-            names = {"-o", "--output"},
-            description = "The path to the output file.",
-            required = false)
-    protected String outputFilePath;
+    /*
+     * Creation of a dependent group to group the output file path and output format options.
+     * I f an output format is provided, the output file path is required.
+     * But if the output file path is provided, the output format is optional.
+     * And lastly, if no output file path is provided, the output format is also useless.
+     */
+    @CommandLine.ArgGroup(exclusive = false, multiplicity = "0..1")
+    Dependent group = new Dependent();
 
-    @CommandLine.Option(
-            names = {"-of", "--output-format"},
-            description = "The output format, (possible format: ${COMPLETION-CANDIDATES}) ",
-            required = false)
-    protected AvailableOutputFormat outputFormat = AvailableOutputFormat.TEXT;
+    static class Dependent {
+        @CommandLine.Option(
+                names = {"-o", "--output"},
+                description = "The path to the output file.",
+                required = true)
+        protected String outputFilePath;
+
+        @CommandLine.Option(
+                names = {"-of", "--output-format"},
+                description = "The output format, (possible format: ${COMPLETION-CANDIDATES}) ",
+                required = false)
+        protected AvailableOutputFormat outputFormat;
+
+        public String getOutputFilePath() {
+            return outputFilePath;
+        }
+
+        public AvailableOutputFormat getOutputFormat() {
+            return outputFormat;
+        }
+    }
 
     @CommandLine.Option(
             names = {"-s", "--show"},
@@ -46,7 +73,7 @@ public class Root implements Callable<Integer>{
 
     @CommandLine.Option(
             names = {"-if", "--input-format"},
-            description = "Either text or file, if set to file you must provide a valid path as a positional parameter, (possible format: ${COMPLETION-CANDIDATES})",
+            description = "Input format, default text (possible format: ${COMPLETION-CANDIDATES})",
             required = false)
     protected AvailableInputFormat inputFormat = AvailableInputFormat.TEXT;
 
@@ -57,8 +84,8 @@ public class Root implements Callable<Integer>{
 
         System.out.println("Params : " +
                 "text = " + text + ", " +
-                "outputFilePath = " + outputFilePath + ", " +
-                "outputFormat = " + outputFormat + ", " +
+                "outputFilePath = " + group.getOutputFilePath() + ", " +
+                "outputFormat = " + group.getOutputFormat() + ", " +
                 "show = " + show + ", " +
                 "inputFormat = " + inputFormat);
 
@@ -67,14 +94,6 @@ public class Root implements Callable<Integer>{
 
     public String getText() {
         return text;
-    }
-
-    public String getOutputFilePath() {
-        return outputFilePath;
-    }
-
-    public AvailableOutputFormat getOutputFormat() {
-        return outputFormat;
     }
 
     public boolean isShow() {
