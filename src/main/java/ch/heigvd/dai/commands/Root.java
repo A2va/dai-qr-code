@@ -4,7 +4,7 @@ import java.util.concurrent.Callable;
 import picocli.CommandLine;
 
 @CommandLine.Command(
-        description = "A command-line interface (CLI) tool that allows users to generate QR codes by providing text or URLs as input.",
+        description = "A command line interface (CLI) tool that allows users to generate QR codes by providing text or URLs as input.",
         version = "1.0.0",
         scope = CommandLine.ScopeType.INHERIT,
         mixinStandardHelpOptions = true)
@@ -31,12 +31,12 @@ public class Root implements Callable<Integer>{
 
     @CommandLine.Parameters(
             index = "0",
-            description = "The text or file to encode as a QR code.")
+            description = "The text or file to be encoded as a QR code.")
     protected String text;
 
     /*
      * Creation of a dependent group to group the output file path and output format options.
-     * I f an output format is provided, the output file path is required.
+     * If an output format is provided, the output file path is required.
      * But if the output file path is provided, the output format is optional.
      * And lastly, if no output file path is provided, the output format is also useless.
      */
@@ -67,7 +67,7 @@ public class Root implements Callable<Integer>{
 
     @CommandLine.Option(
             names = {"-s", "--show"},
-            description = "Force showing the QR code in the terminal if the output is a file, by default show is enabled when no output was provided.",
+            description = "Force the display of the QR code in the terminal if the output is a file, by default the QR code is displayed if no output is provided.",
             required = false)
     protected boolean show = false;
 
