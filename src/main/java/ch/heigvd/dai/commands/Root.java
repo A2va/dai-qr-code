@@ -1,6 +1,9 @@
 package ch.heigvd.dai.commands;
 
 import java.io.File;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.concurrent.Callable;
 import picocli.CommandLine;
 
@@ -57,12 +60,23 @@ public class Root implements Callable<Integer>{
                 required = false)
         protected AvailableOutputFormat outputFormat;
 
+        @CommandLine.Option(
+                names = {"-f", "--force"},
+                description = "Don't prompt to overwrite if file exists.",
+                required = false)
+        protected boolean force = false;
+
+
         public File getOutputFilePath() {
             return outputFilePath;
         }
 
         public AvailableOutputFormat getOutputFormat() {
             return outputFormat;
+        }
+
+        public boolean isForce() {
+            return force;
         }
     }
 
@@ -81,12 +95,43 @@ public class Root implements Callable<Integer>{
     @Override
     public Integer call() {
 
+        // Check if the output file exists and if the user wants to overwrite it
+        // https://github.com/remkop/picocli/issues/1275
+        if (groupOutput.getOutputFilePath() != null && groupOutput.getOutputFilePath().exists() && !groupOutput.isForce()) {
+            String response = null;
+            while (!"Y".equalsIgnoreCase(response)) {
+                System.out.println("Do you want ot overwrite " + groupOutput.getOutputFilePath().getName() + " ? Y/N");
+
+                try {
+                    // I use a BufferedReader to read the user's response because System.console() returns null in IntelliJ IDEA
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+                    response = reader.readLine();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                if ("N".equalsIgnoreCase(response)) { return 0; }
+            }
+        }
+
+        // If the input format is a file, verify that the file exists
+        if (inputFormat == AvailableInputFormat.FILE) {
+            File file = new File(text);
+            if (!file.exists()) {
+                System.err.println("The file " + text + " does not exist.");
+                System.err.println("Please provide a valid file path.");
+                return 1;
+            }
+        }
+
+
         // TODO: Call the QRCodeGenerator class with the provided parameters
 
         System.out.println("Params : " +
                 "text = " + text + ", " +
                 "outputFilePath = " + groupOutput.getOutputFilePath() + ", " +
                 "outputFormat = " + groupOutput.getOutputFormat() + ", " +
+                "force = " + groupOutput.isForce() + ", " +
                 "show = " + show + ", " +
                 "inputFormat = " + inputFormat);
 
