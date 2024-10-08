@@ -96,12 +96,13 @@ public class Root implements Callable<Integer>{
     public Integer call() {
 
         // Check if the output file exists and if the user wants to overwrite it
-        if (groupOutput.getOutputFilePath().exists() && !groupOutput.isForce()) {
+        if (groupOutput.getOutputFilePath() != null && groupOutput.getOutputFilePath().exists() && !groupOutput.isForce()) {
             String response = null;
             while (!"Y".equalsIgnoreCase(response)) {
                 System.out.println("Do you want ot overwrite " + groupOutput.getOutputFilePath().getName() + " ? Y/N");
 
                 try {
+                    // I use a BufferedReader to read the user's response because System.console() returns null in IntelliJ IDEA
                     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
                     response = reader.readLine();
                 } catch (IOException e) {
@@ -112,12 +113,24 @@ public class Root implements Callable<Integer>{
             }
         }
 
+        // If the input format is a file, verify that the file exists
+        if (inputFormat == AvailableInputFormat.FILE) {
+            File file = new File(text);
+            if (!file.exists()) {
+                System.err.println("The file " + text + " does not exist.");
+                System.err.println("Please provide a valid file path.");
+                return 1;
+            }
+        }
+
+
         // TODO: Call the QRCodeGenerator class with the provided parameters
 
         System.out.println("Params : " +
                 "text = " + text + ", " +
                 "outputFilePath = " + groupOutput.getOutputFilePath() + ", " +
                 "outputFormat = " + groupOutput.getOutputFormat() + ", " +
+                "force = " + groupOutput.isForce() + ", " +
                 "show = " + show + ", " +
                 "inputFormat = " + inputFormat);
 
