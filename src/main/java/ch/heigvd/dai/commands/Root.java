@@ -96,6 +96,7 @@ public class Root implements Callable<Integer>{
     public Integer call() {
 
         // Check if the output file exists and if the user wants to overwrite it
+        // https://github.com/remkop/picocli/issues/1275
         if (groupOutput.getOutputFilePath() != null && groupOutput.getOutputFilePath().exists() && !groupOutput.isForce()) {
             String response = null;
             while (!"Y".equalsIgnoreCase(response)) {
