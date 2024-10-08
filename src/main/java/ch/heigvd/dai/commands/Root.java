@@ -1,6 +1,9 @@
 package ch.heigvd.dai.commands;
 
 import java.io.File;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.concurrent.Callable;
 import picocli.CommandLine;
 
@@ -57,12 +60,23 @@ public class Root implements Callable<Integer>{
                 required = false)
         protected AvailableOutputFormat outputFormat;
 
+        @CommandLine.Option(
+                names = {"-f", "--force"},
+                description = "Don't prompt to overwrite if file exists.",
+                required = false)
+        protected boolean force = false;
+
+
         public File getOutputFilePath() {
             return outputFilePath;
         }
 
         public AvailableOutputFormat getOutputFormat() {
             return outputFormat;
+        }
+
+        public boolean isForce() {
+            return force;
         }
     }
 
@@ -80,6 +94,23 @@ public class Root implements Callable<Integer>{
 
     @Override
     public Integer call() {
+
+        // Check if the output file exists and if the user wants to overwrite it
+        if (groupOutput.getOutputFilePath().exists() && !groupOutput.isForce()) {
+            String response = null;
+            while (!"Y".equalsIgnoreCase(response)) {
+                System.out.println("Do you want ot overwrite " + groupOutput.getOutputFilePath().getName() + " ? Y/N");
+
+                try {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+                    response = reader.readLine();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                if ("N".equalsIgnoreCase(response)) { return 0; }
+            }
+        }
 
         // TODO: Call the QRCodeGenerator class with the provided parameters
 
