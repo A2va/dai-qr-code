@@ -1,5 +1,6 @@
 package ch.heigvd.dai.commands;
 
+import java.io.File;
 import java.util.concurrent.Callable;
 import picocli.CommandLine;
 
@@ -41,14 +42,14 @@ public class Root implements Callable<Integer>{
      * And lastly, if no output file path is provided, the output format is also useless.
      */
     @CommandLine.ArgGroup(exclusive = false, multiplicity = "0..1")
-    Dependent group = new Dependent();
+    OutputDependent groupOutput = new OutputDependent();
 
-    static class Dependent {
+    static class OutputDependent {
         @CommandLine.Option(
                 names = {"-o", "--output"},
                 description = "The path to the output file.",
                 required = true)
-        protected String outputFilePath;
+        protected File outputFilePath;
 
         @CommandLine.Option(
                 names = {"-of", "--output-format"},
@@ -56,7 +57,7 @@ public class Root implements Callable<Integer>{
                 required = false)
         protected AvailableOutputFormat outputFormat;
 
-        public String getOutputFilePath() {
+        public File getOutputFilePath() {
             return outputFilePath;
         }
 
@@ -84,8 +85,8 @@ public class Root implements Callable<Integer>{
 
         System.out.println("Params : " +
                 "text = " + text + ", " +
-                "outputFilePath = " + group.getOutputFilePath() + ", " +
-                "outputFormat = " + group.getOutputFormat() + ", " +
+                "outputFilePath = " + groupOutput.getOutputFilePath() + ", " +
+                "outputFormat = " + groupOutput.getOutputFormat() + ", " +
                 "show = " + show + ", " +
                 "inputFormat = " + inputFormat);
 
