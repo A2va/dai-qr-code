@@ -13,11 +13,11 @@ A command-line interface (CLI) tool that allows users to generate QR codes by pr
 
 ### Features:
 
--[ ] Create QR codes from text / url / file / ...
--[ ] Display the QR in the terminal (ascii art)
--[ ] Save in a file (ascii art)
--[ ] Save as image
--[ ] Change size / shape / encoding
+- [ ] Create QR codes from text / url / file / ...
+- [ ] Display the QR in the terminal (ascii art)
+- [ ] Save in a file (ascii art)
+- [ ] Save as image
+- [ ] Change size / shape / encoding
 
 ## Installation
 
