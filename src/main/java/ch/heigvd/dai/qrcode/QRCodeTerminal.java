@@ -22,8 +22,9 @@
 
 // Original repo: https://github.com/Auties00/QrToTerminal
 // The author of the repo did not specify a licence, but if you look for the package
-// com.github.auties00:qr-terminal on mvnrepository.com (https://mvnrepository.com/artifact/com.github.auties00/qr-terminal),
+// com.github.auties00:qr-terminal on mvnrepository.com,
 // you can see that it is distributed under the MIT licence.
+// https://mvnrepository.com/artifact/com.github.auties00/qr-terminal
 // We modified the code slightly to suit our needs.
 
 package ch.heigvd.dai.qrcode;
