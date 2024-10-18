@@ -60,8 +60,7 @@ public class QRCodeGenerator {
   /**
    * Generates a QR code and encode it as an text and return it in a ByteArray.
    *
-   * @param format the image format to use (e.g. "PNG", "JPEG")
-   * @throws IOException if there is an error writing the image to the file
+   * @throws IOException if there is an error writing to the file
    * @return the ByteArrayOutputStream containing the text data
    */
   public ByteArrayOutputStream generateText() throws IOException {
