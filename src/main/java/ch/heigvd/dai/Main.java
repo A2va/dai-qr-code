@@ -37,12 +37,18 @@ public class Main {
     // Create Root command
     Root root = new Root();
 
+    // Calculate execution time for root command
+    Long start = System.nanoTime();
     int exitCode =
         new CommandLine(root)
             .setCommandName(jarFilename)
             .setCaseInsensitiveEnumValuesAllowed(true)
             .execute(args);
+    Long end = System.nanoTime();
 
+    if (exitCode == 0) {
+      System.out.println("Execution time in ms: " + (end - start) / (1000 * 1000));
+    }
     System.exit(exitCode);
   }
 }
