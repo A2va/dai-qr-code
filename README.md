@@ -4,9 +4,6 @@ This project has been made in the context of [DAI](https://github.com/heig-vd-da
 
 ## Authors
 
-- [Antoine Leresche](github.com/A2va)
-- [Robin Forestier](github.com/forestierr)
-
 ```
       █████████████████████████████████        █████████████████████████████████
       █████████████████████████████████        █████████████████████████████████
@@ -25,6 +22,7 @@ This project has been made in the context of [DAI](https://github.com/heig-vd-da
       ████▄▄▄▄▄▄▄█▄▄▄▄██▄▄██▄█▄███▄████        ████▄▄▄▄▄▄▄█▄▄█▄██▄▄██▄█▄███▄████
       █████████████████████████████████        █████████████████████████████████
       █████████████████████████████████        █████████████████████████████████
+           Antoine Leresche (A2va)                Robin Forestier (Forestierr)  
 ```
 
 ## Description
@@ -91,3 +89,5 @@ Finally, the text to be encoded in the QR code can be taken from an existing fil
 ```bash
 a2va@linux:~$ qrcode --input-format=file -i input.txt --output-format=JPEG -o "output.jpg"
 ```
+The above command creates as many images as there are lines in the input file. 
+The file will be named `output.jpg, output1.jpg, output2.jpg` and so on.
