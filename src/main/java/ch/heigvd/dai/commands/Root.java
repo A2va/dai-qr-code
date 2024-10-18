@@ -22,6 +22,7 @@
 // SOFTWARE.
 package ch.heigvd.dai.commands;
 
+import ch.heigvd.dai.ExceptionHelper;
 import ch.heigvd.dai.qrcode.QRCodeGenerator;
 import java.io.*;
 import java.util.concurrent.Callable;
@@ -112,8 +113,17 @@ public class Root implements Callable<Integer> {
       required = false)
   protected AvailableInputFormat inputFormat = AvailableInputFormat.TEXT;
 
+  @CommandLine.Option(
+      names = {"-v", "--verbose"},
+      description =
+          "Verbose mode. Print debugging information, including stack traces if an error occurs.",
+      required = false)
+  protected boolean verbose = false;
+
   @Override
   public Integer call() {
+
+    ExceptionHelper exceptionHelper = new ExceptionHelper(verbose);
 
     // Check if the output file exists and if the user wants to overwrite it
     // https://github.com/remkop/picocli/issues/1275
@@ -131,7 +141,8 @@ public class Root implements Callable<Integer> {
           BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
           response = reader.readLine();
         } catch (IOException e) {
-          throw new RuntimeException(e);
+          exceptionHelper.printMessage("Standard input read error", e);
+          return -1;
         }
 
         if ("N".equalsIgnoreCase(response)) {
@@ -141,7 +152,7 @@ public class Root implements Callable<Integer> {
     }
 
     // If the input format is a file, verify that the file exists
-    if (inputFormat == AvailableInputFormat.FILE) {
+    if (getInputFormat() == AvailableInputFormat.FILE) {
       File file = new File(text);
       if (!file.exists()) {
         System.err.println("The file " + text + " does not exist.");
@@ -150,7 +161,7 @@ public class Root implements Callable<Integer> {
       }
     }
 
-    if (inputFormat == AvailableInputFormat.TEXT) {
+    if (getInputFormat() == AvailableInputFormat.TEXT) {
       try {
         QRCodeGenerator qrCodeGenerator = new QRCodeGenerator(getText());
 
@@ -160,11 +171,12 @@ public class Root implements Callable<Integer> {
 
         saveOutput(qrCodeGenerator, groupOutput.getOutputFilePath());
       } catch (Exception e) {
-        e.printStackTrace();
+        exceptionHelper.printMessage("Unable to generate the QR code", e);
+        return -1;
       }
     }
 
-    if (inputFormat == AvailableInputFormat.FILE) {
+    if (getInputFormat() == AvailableInputFormat.FILE) {
       try (BufferedReader reader = new BufferedReader(new FileReader(text))) {
         String line;
         int numfile = 1;
@@ -185,7 +197,8 @@ public class Root implements Callable<Integer> {
           numfile++;
         }
       } catch (Exception e) {
-        e.printStackTrace();
+        exceptionHelper.printMessage("Unable to read input file", e);
+        return -1;
       }
     }
 
@@ -196,8 +209,16 @@ public class Root implements Callable<Integer> {
     return text;
   }
 
+  public AvailableInputFormat getInputFormat() {
+    return inputFormat;
+  }
+
   public boolean isShow() {
     return show;
+  }
+
+  public boolean isVerbose() {
+    return verbose;
   }
 
   private void saveOutput(QRCodeGenerator qrCodeGenerator, File outputFile) {
