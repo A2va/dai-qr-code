@@ -24,6 +24,7 @@ package ch.heigvd.dai.commands;
 
 import ch.heigvd.dai.ExceptionHelper;
 import ch.heigvd.dai.qrcode.QRCodeGenerator;
+import com.google.zxing.WriterException;
 import java.io.*;
 import java.util.concurrent.Callable;
 import picocli.CommandLine;
@@ -170,7 +171,7 @@ public class Root implements Callable<Integer> {
         }
 
         saveOutput(qrCodeGenerator, groupOutput.getOutputFilePath());
-      } catch (Exception e) {
+      } catch (WriterException e) {
         exceptionHelper.printMessage("Unable to generate the QR code", e);
         return -1;
       }
@@ -196,7 +197,7 @@ public class Root implements Callable<Integer> {
           filename = new File(filename.getParent(), newFilename);
           numfile++;
         }
-      } catch (Exception e) {
+      } catch (IOException | WriterException e) {
         exceptionHelper.printMessage("Unable to read input file", e);
         return -1;
       }
