@@ -222,13 +222,15 @@ public class Root implements Callable<Integer> {
   }
 
   private void saveOutput(QRCodeGenerator qrCodeGenerator, File outputFile) {
+    ExceptionHelper exceptionHelper = new ExceptionHelper(verbose);
+
     ByteArrayOutputStream outputStream =
         switch (groupOutput.getOutputFormat()) {
           case JPEG -> {
             try {
               yield qrCodeGenerator.generateImage(groupOutput.getOutputFormat().toString());
             } catch (IOException e) {
-              e.printStackTrace();
+              exceptionHelper.printMessage("Unable to generate the QR code", e);
               yield null;
             }
           }
@@ -236,7 +238,7 @@ public class Root implements Callable<Integer> {
             try {
               yield qrCodeGenerator.generateText();
             } catch (Exception e) {
-              e.printStackTrace();
+              exceptionHelper.printMessage("Unable to generate the QR code", e);
               yield null;
             }
           }
@@ -249,7 +251,7 @@ public class Root implements Callable<Integer> {
       try (FileOutputStream fileOutputStream = new FileOutputStream(outputFile.getAbsolutePath())) {
         outputStream.writeTo(fileOutputStream);
       } catch (IOException e) {
-        e.printStackTrace();
+        exceptionHelper.printMessage("Unable to save the QR code to the output file", e);
       }
     }
   }
