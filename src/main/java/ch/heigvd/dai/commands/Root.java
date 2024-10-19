@@ -152,7 +152,7 @@ public class Root implements Callable<Integer> {
     }
 
     // If the input format is a file, verify that the file exists
-    if (getInputFormat() == AvailableInputFormat.FILE) {
+    if (inputFormat == AvailableInputFormat.FILE) {
       File file = new File(text);
       if (!file.exists()) {
         System.err.println("The file " + text + " does not exist.");
@@ -161,11 +161,11 @@ public class Root implements Callable<Integer> {
       }
     }
 
-    if (getInputFormat() == AvailableInputFormat.TEXT) {
+    if (inputFormat == AvailableInputFormat.TEXT) {
       try {
-        QRCodeGenerator qrCodeGenerator = new QRCodeGenerator(getText());
+        QRCodeGenerator qrCodeGenerator = new QRCodeGenerator(text);
 
-        if (groupOutput.getOutputFormat() == null || isShow()) {
+        if (groupOutput.getOutputFormat() == null || show) {
           qrCodeGenerator.show();
         }
 
@@ -176,7 +176,7 @@ public class Root implements Callable<Integer> {
       }
     }
 
-    if (getInputFormat() == AvailableInputFormat.FILE) {
+    if (inputFormat == AvailableInputFormat.FILE) {
       try (BufferedReader reader = new BufferedReader(new FileReader(text))) {
         String line;
         int numfile = 1;
@@ -184,7 +184,7 @@ public class Root implements Callable<Integer> {
         while ((line = reader.readLine()) != null) {
           QRCodeGenerator qrCodeGenerator = new QRCodeGenerator(line);
 
-          if (groupOutput.getOutputFormat() == null || isShow()) {
+          if (groupOutput.getOutputFormat() == null || show) {
             qrCodeGenerator.show();
           }
 
@@ -205,22 +205,6 @@ public class Root implements Callable<Integer> {
     return 0;
   }
 
-  public String getText() {
-    return text;
-  }
-
-  public AvailableInputFormat getInputFormat() {
-    return inputFormat;
-  }
-
-  public boolean isShow() {
-    return show;
-  }
-
-  public boolean isVerbose() {
-    return verbose;
-  }
-
   private void saveOutput(QRCodeGenerator qrCodeGenerator, File outputFile) {
     ExceptionHelper exceptionHelper = new ExceptionHelper(verbose);
 
@@ -230,7 +214,7 @@ public class Root implements Callable<Integer> {
             try {
               yield qrCodeGenerator.generateImage(groupOutput.getOutputFormat().toString());
             } catch (IOException e) {
-              exceptionHelper.printMessage("Unable to generate the QR code", e);
+              exceptionHelper.printMessage("Unable to generate the image", e);
               yield null;
             }
           }
@@ -238,7 +222,7 @@ public class Root implements Callable<Integer> {
             try {
               yield qrCodeGenerator.generateText();
             } catch (Exception e) {
-              exceptionHelper.printMessage("Unable to generate the QR code", e);
+              exceptionHelper.printMessage("Unable to generate the text", e);
               yield null;
             }
           }
