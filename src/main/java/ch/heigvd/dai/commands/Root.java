@@ -22,7 +22,9 @@
 // SOFTWARE.
 package ch.heigvd.dai.commands;
 
+import ch.heigvd.dai.ExceptionHelper;
 import ch.heigvd.dai.qrcode.QRCodeGenerator;
+import com.google.zxing.WriterException;
 import java.io.*;
 import java.util.concurrent.Callable;
 import picocli.CommandLine;
@@ -112,8 +114,17 @@ public class Root implements Callable<Integer> {
       required = false)
   protected AvailableInputFormat inputFormat = AvailableInputFormat.TEXT;
 
+  @CommandLine.Option(
+      names = {"-v", "--verbose"},
+      description =
+          "Verbose mode. Print debugging information, including stack traces if an error occurs.",
+      required = false)
+  protected boolean verbose = false;
+
   @Override
   public Integer call() {
+
+    ExceptionHelper exceptionHelper = new ExceptionHelper(verbose);
 
     // Check if the output file exists and if the user wants to overwrite it
     // https://github.com/remkop/picocli/issues/1275
@@ -131,7 +142,8 @@ public class Root implements Callable<Integer> {
           BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
           response = reader.readLine();
         } catch (IOException e) {
-          throw new RuntimeException(e);
+          exceptionHelper.printMessage("Standard input read error", e);
+          return -1;
         }
 
         if ("N".equalsIgnoreCase(response)) {
@@ -152,15 +164,16 @@ public class Root implements Callable<Integer> {
 
     if (inputFormat == AvailableInputFormat.TEXT) {
       try {
-        QRCodeGenerator qrCodeGenerator = new QRCodeGenerator(getText());
+        QRCodeGenerator qrCodeGenerator = new QRCodeGenerator(text);
 
-        if (groupOutput.getOutputFormat() == null || isShow()) {
+        if (groupOutput.getOutputFormat() == null || show) {
           qrCodeGenerator.show();
         }
 
         saveOutput(qrCodeGenerator, groupOutput.getOutputFilePath());
-      } catch (Exception e) {
-        e.printStackTrace();
+      } catch (WriterException e) {
+        exceptionHelper.printMessage("Unable to generate the QR code", e);
+        return -1;
       }
     }
 
@@ -172,7 +185,7 @@ public class Root implements Callable<Integer> {
         while ((line = reader.readLine()) != null) {
           QRCodeGenerator qrCodeGenerator = new QRCodeGenerator(line);
 
-          if (groupOutput.getOutputFormat() == null || isShow()) {
+          if (groupOutput.getOutputFormat() == null || show) {
             qrCodeGenerator.show();
           }
 
@@ -184,30 +197,25 @@ public class Root implements Callable<Integer> {
           filename = new File(filename.getParent(), newFilename);
           numfile++;
         }
-      } catch (Exception e) {
-        e.printStackTrace();
+      } catch (IOException | WriterException e) {
+        exceptionHelper.printMessage("Unable to read input file", e);
+        return -1;
       }
     }
 
     return 0;
   }
 
-  public String getText() {
-    return text;
-  }
-
-  public boolean isShow() {
-    return show;
-  }
-
   private void saveOutput(QRCodeGenerator qrCodeGenerator, File outputFile) {
+    ExceptionHelper exceptionHelper = new ExceptionHelper(verbose);
+
     ByteArrayOutputStream outputStream =
         switch (groupOutput.getOutputFormat()) {
           case JPEG -> {
             try {
               yield qrCodeGenerator.generateImage(groupOutput.getOutputFormat().toString());
             } catch (IOException e) {
-              e.printStackTrace();
+              exceptionHelper.printMessage("Unable to generate the image", e);
               yield null;
             }
           }
@@ -215,7 +223,7 @@ public class Root implements Callable<Integer> {
             try {
               yield qrCodeGenerator.generateText();
             } catch (Exception e) {
-              e.printStackTrace();
+              exceptionHelper.printMessage("Unable to generate the text", e);
               yield null;
             }
           }
@@ -228,7 +236,7 @@ public class Root implements Callable<Integer> {
       try (FileOutputStream fileOutputStream = new FileOutputStream(outputFile.getAbsolutePath())) {
         outputStream.writeTo(fileOutputStream);
       } catch (IOException e) {
-        e.printStackTrace();
+        exceptionHelper.printMessage("Unable to save the QR code to the output file", e);
       }
     }
   }
